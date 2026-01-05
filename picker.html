@@ -835,6 +835,30 @@ var sortable = new Sortable(pickerUI.elem.favorites.get(0), {
     }
 });
 /* End sortable favorites */
+
+    /* Update stats display */
+function updateStats() {
+    var filteredItems = getFilteredItems();
+    var totalCharacters = filteredItems.length;
+    var evaluatedCount = myPicker.state.evaluated.length;
+    var favoritesCount = myPicker.state.favorites.length;
+    var completionPercent = totalCharacters > 0 ? Math.round((evaluatedCount / totalCharacters) * 100) : 0;
+    
+    document.getElementById('total-evaluated').textContent = evaluatedCount;
+    document.getElementById('total-characters').textContent = totalCharacters;
+    document.getElementById('favorites-count').textContent = favoritesCount;
+    document.getElementById('completion-percent').textContent = completionPercent;
+}
+
+// Call updateStats whenever the picker state changes
+var originalUpdate = pickerUI.update.bind(pickerUI);
+pickerUI.update = function(skipAnimation) {
+    originalUpdate(skipAnimation);
+    updateStats();
+};
+
+// Initial stats update
+updateStats();
 </script>
 </body>
 </html>
