@@ -836,28 +836,18 @@ var sortable = new Sortable(pickerUI.elem.favorites.get(0), {
 });
 /* End sortable favorites */
 
-  /* Update stats display */
+/* Update stats display */
 function updateStats() {
-    console.log('Full myPicker object:', myPicker);
-    console.log('myPicker properties:', Object.keys(myPicker));
-    
     var filteredItems = getFilteredItems();
     var totalCharacters = filteredItems.length;
     
-    // Try different possible property names
-    var evaluated = myPicker.evaluated || myPicker.getEvaluated?.() || myPicker._evaluated || [];
-    var favorites = myPicker.favorites || myPicker.getFavorites?.() || myPicker._favorites || [];
+    // Access the arrays from the picker state
+    var eliminated = myPicker.state.arrays.eliminated || [];
+    var favorites = myPicker.state.arrays.favorites || [];
     
-    // Fallback: count from the UI if needed
-    if (!evaluated.length && !favorites.length) {
-        // Count favorites from the UI
-        favoritesCount = $('#favorites .item').length;
-        evaluatedCount = 0; // We'll figure this out
-    } else {
-        var evaluatedCount = evaluated.length;
-        var favoritesCount = favorites.length;
-    }
-    
+    // Evaluated = eliminated + favorites (all characters we've made decisions about)
+    var evaluatedCount = eliminated.length + favorites.length;
+    var favoritesCount = favorites.length;
     var completionPercent = totalCharacters > 0 ? Math.round((evaluatedCount / totalCharacters) * 100) : 0;
     
     document.getElementById('total-evaluated').textContent = evaluatedCount;
@@ -871,10 +861,6 @@ var originalUpdate = pickerUI.update.bind(pickerUI);
 pickerUI.update = function(skipAnimation) {
     originalUpdate(skipAnimation);
     updateStats();
-};
-
-// Initial stats update
-updateStats();
 
 
 // Initial stats update
