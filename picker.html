@@ -695,13 +695,47 @@ var items = [
 
 ];
 
+// STEP 2: Extract unique shows and generate checkboxes
+var shows = [...new Set(allItems.map(item => item.show))].sort();
+var checkboxContainer = document.getElementById('show-checkboxes');
+
+shows.forEach(function(show) {
+    var label = document.createElement('label');
+    var checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'show-filter';
+    checkbox.value = show;
+    checkbox.checked = true; // Start with all selected
+    
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(' ' + show));
+    checkboxContainer.appendChild(label);
+});
+
+// STEP 3: Function to get filtered items
+function getFilteredItems() {
+    var selectedShows = [];
+    document.querySelectorAll('.show-filter:checked').forEach(function(cb) {
+        selectedShows.push(cb.value);
+    });
+    
+    // If no shows selected, return empty array
+    if (selectedShows.length === 0) {
+        return [];
+    }
+    
+    return allItems.filter(function(item) {
+        return selectedShows.includes(item.show);
+    });
+}
+
+// STEP 4: Initialize picker with filtered items
 var myPicker = new picker.Picker({
-    items: items,
+    items: getFilteredItems(),
     defaultSettings: {
         minBatchSize: 2,
         maxBatchSize: 2
     }
-    
 });
 
 var pickerUI = new PickerUI(myPicker, {
@@ -712,11 +746,41 @@ var pickerUI = new PickerUI(myPicker, {
         redo: "#redo",
         evaluating: "#evaluating",
         favorites: "#favorites"
-       
     }
 });
 
 pickerUI.initialize();
+
+// STEP 5: Add event listeners to checkboxes
+document.querySelectorAll('.show-filter').forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+        var filteredItems = getFilteredItems();
+        myPicker = new picker.Picker({
+            items: filteredItems,
+            defaultSettings: {
+                minBatchSize: 2,
+                maxBatchSize: 2
+            }
+        });
+        pickerUI.picker = myPicker;
+        pickerUI.initialize();
+    });
+});
+
+// STEP 6: Select/Deselect All buttons
+document.getElementById('select-all').addEventListener('click', function() {
+    document.querySelectorAll('.show-filter').forEach(function(cb) {
+        cb.checked = true;
+    });
+    document.querySelector('.show-filter').dispatchEvent(new Event('change'));
+});
+
+document.getElementById('deselect-all').addEventListener('click', function() {
+    document.querySelectorAll('.show-filter').forEach(function(cb) {
+        cb.checked = false;
+    });
+    document.querySelector('.show-filter').dispatchEvent(new Event('change'));
+});
 
 /* Sortable favorites - you can safely remove this, and the Sortable.min.js script, if you don't want to be able to sort your favorite list. */
 var sortable = new Sortable(pickerUI.elem.favorites.get(0), {
